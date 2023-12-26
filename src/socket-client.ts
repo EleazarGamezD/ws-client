@@ -1,65 +1,64 @@
-import { Manager, Socket} from 'socket.io-client'
+import { Manager, Socket } from 'socket.io-client'
 
 let socket: Socket
 
-export const connectToServer =(token:string) =>{
-const manager = new Manager('http://localhost:3000/socket.io/socket.io.js',{
-    extraHeaders:{
-        authentication:token
-    }
-});
-socket.removeAllListeners()
-socket = manager.socket('/')
-
-addListener()
+export const connectToServer = (token: string) => {
+    const manager = new Manager('http://localhost:3000/socket.io/socket.io.js', {
+        extraHeaders: {
+            authentication: token
+        }
+    });
+    /* socket.removeAllListeners() */
+    socket = manager.socket('/')
+    addListener()
 }
 const addListener = () => {
 
     const serverStatusLabel = document.querySelector('#server-status')!
     const clientsUl = document.querySelector('#clients-ul')!
     const messagesUl = document.querySelector<HTMLAnchorElement>('#messages-ul')!
-    const formMessage = document.querySelector<HTMLFormElement>('#message-form' )!
+    const formMessage = document.querySelector<HTMLFormElement>('#message-form')!
     const inputMessage = document.querySelector<HTMLInputElement>('#message-input ')!
-   
-    socket.on('connect', ()  =>{
+
+    socket.on('connect', () => {
         serverStatusLabel.innerHTML = 'connected'
     });
-    socket.on('disconnect', ()  =>{
+    socket.on('disconnect', () => {
         serverStatusLabel.innerHTML = 'disconnected'
     });
 
-    socket.on('clientes-updated', (clients: string[])=>{
+    socket.on('clientes-updated', (clients: string[]) => {
         let clientsHtml = '';
-        clients.forEach(clientId =>{
+        clients.forEach(clientId => {
             clientsHtml += `<li>${clientId}</li>`
         });
-        clientsUl.innerHTML =  clientsHtml
+        clientsUl.innerHTML = clientsHtml
     });
 
-    formMessage.addEventListener('submit',(event)=>{
+    formMessage.addEventListener('submit', (event) => {
         event.preventDefault()
-        if(inputMessage.value.trim().length <=0) return
+        if (inputMessage.value.trim().length <= 0) return
 
         socket.emit('message-from-client', {
             id: 'YO',
             message: inputMessage.value
         })
-           
-            inputMessage.value = ''
-        })
 
-        socket.on('message-from-server', (payload:{fullName:string, message:string})=>{
-           const newMessage = `
+        inputMessage.value = ''
+    })
+
+    socket.on('message-from-server', (payload: { fullName: string, message: string }) => {
+        const newMessage = `
            <li>
            <strong>${payload.fullName}</strong>
            <span>${payload.message}</span>
            </li>`
-           const li = document.createElement('li')
-           li.innerHTML = newMessage
-           messagesUl.append(li)
-        })
-        
-    }
+        const li = document.createElement('li')
+        li.innerHTML = newMessage
+        messagesUl.append(li)
+    })
 
-    
+}
+
+
 
